@@ -3,7 +3,7 @@
  * Basic utilities for dealing with network traffic
  * for HMC CS125 lab 6
  */
-#ifndef utilites
+#ifndef utilities
 #define utilities 1
 
 struct command {
@@ -20,5 +20,7 @@ int setUpUdpSock(int port);
 ssize_t sendTo(int socket, command data, sockaddr* addr); 
 int recieveIntFrom(int socket);
 int recieveCommandFrom(int socket);
+
+void sleep(int sleep_time);
 
 #endif
