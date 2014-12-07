@@ -44,3 +44,11 @@ int recieveFrom(int socket) {
 size_t recieveFrom(int socket, command result) {
 	return recvfrom(socket, (void*)&result, sizeof(result), 0, NULL, NULL);
 }
+
+//sleep wrapper to sleep in smaller units of time
+void sleep(int sleep_time) {
+	struct timespec spec;
+	spec.tv_sec = sleep_time / 1000;
+	spec.tv_nsec = (sleep_time % 1000) * 1000000;
+	nanosleep(&spec, NULL);
+}
