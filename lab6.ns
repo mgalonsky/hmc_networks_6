@@ -14,6 +14,14 @@ set clientE [$ns node]
 
 #set up lans
 set lan0 [$ns make-lan "$server1 $server2 $server3 $clientA $clientB $clientC $clientD $clientE " 100Mb 0ms]
+tb-set-ip-lan $server1 $lan0 10.99.0.1
+tb-set-ip-lan $server2 $lan0 10.99.0.2
+tb-set-ip-lan $server3 $lan0 10.99.0.3
+tb-set-ip-lan $clientA $lan0 10.99.0.4
+tb-set-ip-lan $clientB $lan0 10.99.0.5
+tb-set-ip-lan $clientC $lan0 10.99.0.6
+tb-set-ip-lan $clientD $lan0 10.99.0.7
+tb-set-ip-lan $clientE $lan0 10.99.0.8
 
 #set up routing
 $ns rtproto Static
