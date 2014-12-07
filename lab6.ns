@@ -1,0 +1,22 @@
+#This is a simple ns script. Comments start with #.
+set ns [new Simulator]                 
+source tb_compat.tcl
+
+#Set up nodes
+set server1 [$ns node]
+set server2 [$ns node]
+set server3 [$ns node]
+set clientA [$ns node]
+set clientB [$ns node]
+set clientC [$ns node]
+set clientD [$ns node]
+set clientE [$ns node]
+
+#set up lans
+set lan0 [$ns make-lan "$server1 $server2 $server3 $clientA $clientB $clientC $clientD $clientE " 100Mb 0ms]
+
+#set up routing
+$ns rtproto Static
+
+#Go!
+$ns run
