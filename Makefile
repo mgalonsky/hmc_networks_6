@@ -19,11 +19,11 @@ FILETRANSFER_OBJS =
 
 all:    $(TARGETS)
 
-server: server.o
-	$(CXX) -o server server.o $(CXXFLAGS)
+server: server.o utilities.o
+	$(CXX) -o server server.o utilities.o $(CXXFLAGS)
 
-client: client.o library.o
-	$(CXX) -o client client.o $(CXXFLAGS)
+client: client.o client_library.o utilities.o
+	$(CXX) -o client client.o client_library.o utilities.o $(CXXFLAGS)
 
 clean:
 	rm -f $(TARGETS) *.o
@@ -32,4 +32,5 @@ clean:
 
 server.o: server.cpp
 client.o: client.cpp
-library.o: library.cpp
+client_library.o: client_library.cpp
+utilities.o: utilities.cpp
