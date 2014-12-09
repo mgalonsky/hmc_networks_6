@@ -17,7 +17,14 @@
 using namespace std;
 
 enum commandType {
-	//is this correct?
+	create_lock,
+	get_lock,
+	create_lock,
+	create_int,
+	get_int,
+	set_int,
+	create_barrier,
+	wait_on_barrier
 };
 
 typedef int SID;
@@ -26,7 +33,7 @@ typedef int CID;
 struct command {
 	SID serverId;
 	CID clientId;
-	enum commandType type;
+	commandType type;
 	int name;
 	int argument;
 };
