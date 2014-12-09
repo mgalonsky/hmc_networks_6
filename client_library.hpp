@@ -4,8 +4,14 @@
  * server responds.
  */
 
+#include "utilities.hpp"
+#include <map>
+
 #ifndef CLIENT_LIBRARY
 #define CLIENT_LIBRARY
+
+SID myID;
+map<SID, sockaddr_in> idToSockaddr;
 
 /*
  * Creates a lock of the specified number.  Returns 0 if succesful and -1 on
@@ -39,13 +45,13 @@ int getInt(int intNum);
 int setInt(int intNum, int val);
 
 /*
- * Signs up for a barrier.  Creates the barrier if necessary.
+ * Signs up for a barrier.  Creates the barrier if necessary.  Returns -1 on error.
  */
-void createBarrier(int barrierNum);
+int createBarrier(int barrierNum);
 
 /*
- * Waits for the specified barrier to expire.
+ * Waits for the specified barrier to expire.  Returns -1 on error.
  */
-void waitOnBarrier(int barrierNum);
+int waitOnBarrier(int barrierNum);
 
 #endif CLIENT_LIBRARY
