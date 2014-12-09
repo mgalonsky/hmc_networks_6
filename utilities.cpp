@@ -6,6 +6,20 @@
 
 #include "utilities.hpp"
 
+void parseConfig(list<SID>& serverList, string configFile) {
+	string line;
+	SID serverID;
+	ifstream configFile(configFile);
+	if (configFile.is_open())
+	{
+		while (getline(configFile, line))
+		{
+			serverID = inet_pton(AF_INET, line, &sid);
+			serverList.add(serverID);
+		}
+	}
+}
+
 int setUpUdpSock(int port) {
 	int udpSock;
 	struct sockaddr_in clientaddr;
