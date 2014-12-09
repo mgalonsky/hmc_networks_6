@@ -11,15 +11,18 @@
 #include <stdio.h>
 #include <sys/socket.h>
 #include <netdb.h>
-#include <time.h>
+#include <string>
 #include <list>
 
 using namespace std;
 
+#define SPORT 1234
+#define CPORT 4321
+
 enum commandType {
 	create_lock,
 	get_lock,
-	create_lock,
+	release_lock,
 	create_int,
 	get_int,
 	set_int,
@@ -27,8 +30,8 @@ enum commandType {
 	wait_on_barrier
 };
 
-typedef int SID;
-typedef int CID;
+typedef in_addr SID;
+typedef in_addr CID;
 
 struct command {
 	SID serverId;
@@ -39,7 +42,6 @@ struct command {
 };
 
 void parseConfig(list<SID>& serverList, int configFile);
-void setOwnId(int id);
 
 int setUpUdpSock(int port); 
 size_t sendTo(int socket, command data, sockaddr* addr); 

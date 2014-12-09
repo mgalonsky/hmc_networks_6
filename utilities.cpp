@@ -5,17 +5,20 @@
  */
 
 #include "utilities.hpp"
+#include <fstream>
+#include <time.h>
+#include <arpa/inet.h>
 
 void parseConfig(list<SID>& serverList, string configFile) {
 	string line;
 	SID serverID;
-	ifstream configFile(configFile);
-	if (configFile.is_open())
+	ifstream configStream(configFile);
+	if (configStream.is_open())
 	{
-		while (getline(configFile, line))
+		while (getline(configStream, line))
 		{
-			serverID = inet_pton(AF_INET, line, &sid);
-			serverList.add(serverID);
+			inet_pton(AF_INET, line.c_str(), &serverID);
+			serverList.push_back(serverID);
 		}
 	}
 }
