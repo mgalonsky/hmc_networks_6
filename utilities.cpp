@@ -11,13 +11,15 @@
 
 void parseConfig(list<SID>& serverList, string configFile) {
 	string line;
+	in_addr serverIDwrapper;
 	SID serverID;
 	ifstream configStream(configFile);
 	if (configStream.is_open())
 	{
 		while (getline(configStream, line))
 		{
-			inet_pton(AF_INET, line.c_str(), &serverID);
+			inet_pton(AF_INET, line.c_str(), &serverIDwrapper);
+			serverID = serverIDwrapper.s_addr;
 			serverList.push_back(serverID);
 		}
 	}

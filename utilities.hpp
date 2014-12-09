@@ -30,8 +30,8 @@ enum commandType {
 	wait_on_barrier
 };
 
-typedef in_addr SID;
-typedef in_addr CID;
+typedef unsigned long SID;
+typedef unsigned long CID;
 
 struct command {
 	SID serverId;
@@ -41,7 +41,7 @@ struct command {
 	int argument;
 };
 
-void parseConfig(list<SID>& serverList, int configFile);
+void parseConfig(list<SID>& serverList, string configFile);
 
 int setUpUdpSock(int port); 
 size_t sendTo(int socket, command data, sockaddr* addr); 
