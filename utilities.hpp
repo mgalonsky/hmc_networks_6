@@ -6,20 +6,38 @@
 #ifndef utilities
 #define utilities 1
 
+#include <stdlib.h>
+#include <climits>
+#include <stdio.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <time.h>
+#include <list>
+
+using namespace std;
+
+enum commandType {
+	//is this correct?
+};
+
+typedef int SID;
+typedef int CID;
+
 struct command {
-	int serverId;
-	int clientId;
-	byte commandType;
+	SID serverId;
+	CID clientId;
+	enum commandType type;
+	int name;
 	int argument;
 };
 
-void parseConfig(Map<int, sockaddr> serverList, string configFile);
+void parseConfig(list<SID>& serverList, int configFile);
 void setOwnId(int id);
 
 int setUpUdpSock(int port); 
-ssize_t sendTo(int socket, command data, sockaddr* addr); 
+size_t sendTo(int socket, command data, sockaddr* addr); 
 int recieveIntFrom(int socket);
-int recieveCommandFrom(int socket);
+size_t recieveCommandFrom(int socket, command result);
 
 void sleep(int sleep_time);
 

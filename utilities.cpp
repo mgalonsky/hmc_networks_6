@@ -5,9 +5,6 @@
  */
 
 #include "utilities.hpp"
-#include <climits>
-#include <stdio.h>
-#include <sys/socket.h>
 
 int setUpUdpSock(int port) {
 	int udpSock;
@@ -29,11 +26,11 @@ int setUpUdpSock(int port) {
 	return udpSock;
 }
 
-ssize_t sendTo(int socket, command data, sockaddr* addr) {
-// just wrap the sendto function here
+size_t sendTo(int socket, command data, sockaddr* addr) {
+	return sendto(socket, (void *)&data, sizeof(data), 0, addr, sizeof(addr)); 
 }
 
-int recieveFrom(int socket) {
+int recieveIntFrom(int socket) {
 	int result;
 	if (recvfrom(socket, (void*)&result, sizeof(result), 0, NULL, NULL) >= 0) {
 		return result;
@@ -41,7 +38,7 @@ int recieveFrom(int socket) {
 	return INT_MIN;
 }
 
-size_t recieveFrom(int socket, command result) {
+size_t recieveCommandFrom(int socket, command result) {
 	return recvfrom(socket, (void*)&result, sizeof(result), 0, NULL, NULL);
 }
 
