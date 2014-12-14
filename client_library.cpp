@@ -1,9 +1,16 @@
 #include "client_library.hpp"
+#include <cstdlib>
 
-SID nextServerID();
+static list<SID> serverIDList;
+
+SID nextServerID() {
+	auto iter = serverIDList.begin();
+	srand(time(NULL));
+	int amountToAdvance = rand() % serverIDList.size(); 
+	advance(iter, amountToAdvance);
+}
 
 void init(string& configFileName) {
-	list<SID> serverIDList;
 	parseConfig(serverIDList, configFileName);
 	myID = htonl(INADDR_ANY);
 
