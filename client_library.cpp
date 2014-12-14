@@ -8,6 +8,7 @@ SID nextServerID() {
 	srand(time(NULL));
 	int amountToAdvance = rand() % serverIDList.size(); 
 	advance(iter, amountToAdvance);
+	return *iter;
 }
 
 void init(string& configFileName) {
