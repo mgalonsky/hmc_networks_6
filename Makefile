@@ -19,8 +19,8 @@ FILETRANSFER_OBJS =
 
 all:    $(TARGETS)
 
-server: server.o utilities.o
-	$(CXX) -o server server.o utilities.o $(CXXFLAGS)
+server: server.o utilities.o barrier.o
+	$(CXX) -o server server.o utilities.o barrier.o $(CXXFLAGS)
 
 client: client.o client_library.o utilities.o
 	$(CXX) -o client client.o client_library.o utilities.o $(CXXFLAGS)
@@ -34,3 +34,4 @@ server.o: server.cpp
 client.o: client.cpp
 client_library.o: client_library.cpp
 utilities.o: utilities.cpp
+barrier.o: barrier.cpp
