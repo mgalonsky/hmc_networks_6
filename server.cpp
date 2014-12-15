@@ -11,6 +11,7 @@
 #include <pthread.h>
 #include <sys/stat.h>
 #include <map>
+#include <time.h>
 #include <queue>
 
 using namespace std;
@@ -74,6 +75,35 @@ int init(string configFile) {
 		return -1;
 	}
 	return 0;
+}
+
+int sendToServers(serverMessage message) {
+	for (auto &curr_pair : serverMap) {
+		//call sendTo
+		
+		// if any of the sendTos returned in error, return taht
+	}
+	return 0;
+}
+
+void* pinger(void* ptr) {
+	serverMessage ping;
+	//detach thread
+	pthread_detach(pthread_self());
+	ping.isPing = true;
+	ping.source = myID;
+	while (true) {
+		//update the ping's time
+		ping.time = time(NULL);
+		//send the message to all the servers (helper function!)
+		if (sendToServers(ping) < 0) {
+			//there was an error, stop
+			return NULL;
+		}
+		//wait for 900 milliseconds before repeating
+		sleep(900);
+	}
+
 }
 
 int main(int argc, char**argv) {
