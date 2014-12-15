@@ -46,7 +46,7 @@ void parseConfig(list<SID>& serverList, string configFile);
 int setUpUdpSock(int port); 
 size_t sendTo(int socket, command data, sockaddr* addr); 
 int recieveIntFrom(int socket);
-size_t recieveCommandFrom(int socket, command& result);
+size_t recieveCommandFrom(int socket, command result);
 
 void sleep(int sleep_time);
 

@@ -57,7 +57,7 @@ int recieveIntFrom(int socket) {
 	return INT_MIN;
 }
 
-size_t recieveCommandFrom(int socket, command& result) {
+size_t recieveCommandFrom(int socket, command result) {
 	return recvfrom(socket, (void*)&result, sizeof(result), 0, NULL, NULL);
 }
 
