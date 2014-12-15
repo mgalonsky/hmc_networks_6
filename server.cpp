@@ -11,8 +11,9 @@
 #include <pthread.h>
 #include <sys/stat.h>
 #include <map>
-#include <ctime>
+#include <time.h>
 #include <queue>
+#include "barrier.h"
 
 using namespace std;
 
@@ -36,6 +37,12 @@ class CompareMessage {
 	}
 };
 
+struct dataContainer {
+	map<int, Barrier> barriers;
+	map<int, Lock> locks;
+	map<int, int> ints;
+};
+
 typedef priority_queue<serverMessage, vector<serverMessage>, CompareMessage> message_pq;
 
 map<SID, sockaddr_in> serverMap;
@@ -49,6 +56,7 @@ pthread_mutex_t queueLock;
 pthread_mutex_t timeLock;
 pthread_cond_t queueSignal;
 pthread_cond_t timeSignal;
+sockaddr_in clientAddr;
 
 int init(string configFile) {
 	//set myID
@@ -59,6 +67,8 @@ int init(string configFile) {
 	sockaddr_in serveraddr;
 	serveraddr.sin_family = AF_INET;
 	serveraddr.sin_port = htons((unsigned short) SPORT);
+	clientAddr.sin_family = AF_INET;
+	clientAddr.sin_port = htons((unsigned short) CPORT);
 	for (SID serverID : serverList) {
 		serveraddr.sin_addr.s_addr = serverID;
 		serverMap.insert(pair<SID, sockaddr_in>(serverID, serveraddr));
@@ -95,7 +105,7 @@ int sendToServers(serverMessage message) {
 	return 0;
 }
 
-void pinger(void* ptr) {
+void* pinger(void* ptr) {
 	serverMessage ping;
 	//detach thread
 	pthread_detach(pthread_self());
@@ -107,7 +117,7 @@ void pinger(void* ptr) {
 		//send the message to all the servers (helper function!)
 		if (sendToServers(ping) < 0) {
 			//there was an error, stop
-			return;
+			return NULL;
 		}
 		//wait for 900 milliseconds before repeating
 		sleep(900);
@@ -136,20 +146,19 @@ command getNextComand() {
 	return message.clientCommand;
 }
 
-void listenToClients(void* args) {
-	command commandToRecieve;
-	serverMessage message;
-  	//Loop forever listening for incoming commands
-	while (recieveCommandFrom(CPORT, commandToRecieve)) {
-		
-		//Create a server mesasge
-		message.time = time(NULL);
-		message.source = myID;
-		message.isPing = false;
-		message.clientCommand = commandToRecieve;
-		sendToServers(message);
+void processCommand(command& nextCommand, dataContainer& data) {
+	clientAddr.sin_addr.s_addr = nextCommand.clientID;;
+	if (command.commandType == createInt) {
+		if (data.ints.find(nextCommand.name) != data.ints.end()) {
+		  sendto(CPORT, &(-1), sizeof(int), 0, addr, sizeof(curr_pair.second) 
+		data.ints.insert(pair<int,int>(nextCommand.name, nextCommand.argument);
+
+void processCommandsThread(void* args) {
+	dataContainer data;
+	for(;;) {
+		command commandToProcess = getNextCommand();
+		processCommand(commandToProcess);
 	}
-	return;
 }
 
 int main(int argc, char**argv) {
