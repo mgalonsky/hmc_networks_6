@@ -6,6 +6,7 @@
 
 #include "utilities.hpp"
 #include <stdio.h>
+#include <iostream>
 #include <stdlib.h>
 #include <pthread.h>
 #include <sys/stat.h>
@@ -28,8 +29,9 @@ void init(map<SID, sockaddr_in> serverMap, string configFile) {
 		serverMap.insert(pair<SID, sockaddr_in>(serverID, serveraddr));
 	}
 }
-		
 
-int main(int argc, char **argv) {
-
+int main(int argc, char**argv) {
 }
+
+
+
