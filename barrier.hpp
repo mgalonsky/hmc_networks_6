@@ -1,6 +1,6 @@
 #include "utilities.hpp"
 
-#ifndef
+#ifndef BARRIER
 #define BARRIER
 
 class Barrier {
