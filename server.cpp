@@ -11,7 +11,7 @@
 #include <pthread.h>
 #include <sys/stat.h>
 #include <map>
-#include <time.h>
+#include <ctime>
 #include <queue>
 
 using namespace std;
@@ -95,7 +95,7 @@ int sendToServers(serverMessage message) {
 	return 0;
 }
 
-void* pinger(void* ptr) {
+void pinger(void* ptr) {
 	serverMessage ping;
 	//detach thread
 	pthread_detach(pthread_self());
@@ -107,7 +107,7 @@ void* pinger(void* ptr) {
 		//send the message to all the servers (helper function!)
 		if (sendToServers(ping) < 0) {
 			//there was an error, stop
-			return NULL;
+			return;
 		}
 		//wait for 900 milliseconds before repeating
 		sleep(900);
@@ -134,6 +134,22 @@ command getNextComand() {
 	commandQueue.pop();
 	pthread_mutex_unlock(&queueLock);
 	return message.clientCommand;
+}
+
+void listenToClients(void* args) {
+	command commandToRecieve;
+	serverMessage message;
+  	//Loop forever listening for incoming commands
+	while (recieveCommandFrom(CPORT, commandToRecieve)) {
+		
+		//Create a server mesasge
+		message.time = time(NULL);
+		message.source = myID;
+		message.isPing = false;
+		message.clientCommand = commandToRecieve;
+		sendToServers(message);
+	}
+	return;
 }
 
 int main(int argc, char**argv) {
