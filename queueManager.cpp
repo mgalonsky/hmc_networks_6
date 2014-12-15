@@ -16,6 +16,8 @@ void queueManager(void* args) {
 						currMin = curr_pair;
 					}
 				}
+				minTime = currMin;
+				pthread_cond_signal(&timeSignal);
 			}
 		}
 		pthread_mutex_unlock(&timeLock);
@@ -24,6 +26,7 @@ void queueManager(void* args) {
 			//put command in the queue
 			pthread_mutex_lock(&queueLock);
 			commandQueue.push(message);
+			pthread_mutex_signal(&queueSignal);
 			pthread_mutex_unlock(&queueLock);
 		}
 	}
