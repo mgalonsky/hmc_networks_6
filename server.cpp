@@ -79,9 +79,10 @@ int init(string configFile) {
 
 int sendToServers(serverMessage message) {
 	for (auto &curr_pair : serverMap) {
-		//call sendTo
-		
-		// if any of the sendTos returned in error, return taht
+		sockaddr* addr = (sockaddr *) &curr_pair.second;
+		if (sendto(serverPort, (void*)&message, sizeof(message), 0, addr, sizeof(curr_pair.second)) < 0) {
+			return -1;
+		}
 	}
 	return 0;
 }
@@ -111,6 +112,7 @@ int main(int argc, char**argv) {
 	if (init("configFile") < 0) {
 		exit(1);
 	}
+	//start all the threads
 }
 
 
