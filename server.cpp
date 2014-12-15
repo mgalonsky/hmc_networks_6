@@ -20,7 +20,7 @@ struct serverMessage {
 	time_t time;
 	SID source;
 	bool isPing;
-	command ClientCommand;
+	command clientCommand;
 };
 
 //comparison class for priority queue
@@ -42,8 +42,13 @@ map<SID, sockaddr_in> serverMap;
 SID myID;
 int serverPort;
 int clientPort;
-time_t* timeTable;
+map<SID, time_t> timeMap;
+pair<SID, time_t> minTime;
 message_pq commandQueue;
+pthread_mutex_t queueLock;
+pthread_mutex_t timeLock;
+pthread_cond_t queueSignal;
+pthread_cond_t timeSignal;
 
 int init(string configFile) {
 	//set myID
@@ -58,13 +63,16 @@ int init(string configFile) {
 		serveraddr.sin_addr.s_addr = serverID;
 		serverMap.insert(pair<SID, sockaddr_in>(serverID, serveraddr));
 	}
-	//set up table of times
-		//variable size, so need it to be on the heap
-	timeTable = new time_t[serverMap.size()];
-	//don't need to do any extra pq set up because of typedef
+	//already have a timeMap and priority queue set up and currently empty
+	//set all the times in timeMap to zero to start with
 
-	//set up locks for priority queue
-	//set up signal for priority queue
+	//initialize queuelock, timelock, newcommandsignal, newmintimesignal
+	pthread_mutex_init(&queueLock, NULL);
+	pthread_mutex_init(&timeLock, NULL);
+
+	pthread_cond_init(&queueSignal, NULL);
+	pthread_cond_init(&timeSignal, NULL);
+
 	//set up ports (both Server and Client)
 	if ((serverPort = setUpUdpSock(SPORT)) < 0) {
 		cerr << "error setting up server port" << endl;
@@ -105,6 +113,27 @@ void* pinger(void* ptr) {
 		sleep(900);
 	}
 
+}
+
+command getNextComand() {
+	serverMessage message;
+	pthread_mutex_lock(&queueLock);
+	if (commandQueue.empty()) {
+		 pthread_cond_wait(&queueSignal, &queueLock);
+	}
+	message = commandQueue.top();
+		
+	pthread_mutex_lock(&timeLock);
+	while (!(message.time < minTime.second)) {
+		pthread_mutex_unlock(&queueLock);
+		pthread_cond_wait(&timeSignal, &timeLock);
+		pthread_mutex_lock(&queueLock);
+		message = commandQueue.top();
+	}
+	pthread_mutex_lock(&timeLock);
+	commandQueue.pop();
+	pthread_mutex_unlock(&queueLock);
+	return message.clientCommand;
 }
 
 int main(int argc, char**argv) {
