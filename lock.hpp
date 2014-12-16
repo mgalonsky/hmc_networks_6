@@ -14,7 +14,7 @@ class Lock {
 		//try and grab the lock
 		//returns true if the lock was immediately obtained
 		//returns false if the client was put int the waiting queue
-		bool getLock(CID client);
+		bool getLock(CID client, SID server);
 		
 		//release the lock
 		//this returns the SID of the server responsible for the client from waiting which was granted the lock
