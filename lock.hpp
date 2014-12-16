@@ -23,5 +23,5 @@ class Lock {
 
 		//getter for holder
 		CID lockHolder();
-
+};
 #endif

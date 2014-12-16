@@ -35,3 +35,4 @@ client.o: client.cpp
 client_library.o: client_library.cpp
 utilities.o: utilities.cpp
 barrier.o: barrier.cpp
+lock.o: lock.cpp

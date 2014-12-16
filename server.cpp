@@ -13,7 +13,8 @@
 #include <map>
 #include <time.h>
 #include <queue>
-#include "barrier.h"
+#include "barrier.hpp"
+#include "lock.hpp"
 
 using namespace std;
 
@@ -125,7 +126,7 @@ void* pinger(void* ptr) {
 
 }
 
-command getNextComand() {
+command getNextCommand() {
 	serverMessage message;
 	pthread_mutex_lock(&queueLock);
 	if (commandQueue.empty()) {
@@ -147,48 +148,51 @@ command getNextComand() {
 }
 
 void processCommand(command& nextCommand, dataContainer& data) {
-	clientAddr.sin_addr.s_addr = nextCommand.clientID;
-	if (command.commandType == createInt) {
+	clientAddr.sin_addr.s_addr = nextCommand.clientId;
+	int neg1 = -1;
+	int zero = 0;
+	int min = INT_MIN;
+	if (nextCommand.type == create_int) {
 		if (data.ints.find(nextCommand.name) != data.ints.end()) {
-			sendto(CPORT, &(-1), sizeof(int), 0, clientAddr, sizeof(clientAddr));
+			sendto(CPORT, &neg1, sizeof(int), 0, (sockaddr *)&clientAddr, sizeof(clientAddr));
 		}
-		data.ints.insert(pair<int,int>(nextCommand.name, nextCommand.argument);
-		sendto(CPORT, &(0), sizeof(int), 0, clientAddr, sizeof(clientAddr));
+		data.ints.insert(pair<int,int>(nextCommand.name, nextCommand.argument));
+		sendto(CPORT, &zero, sizeof(int), 0, (sockaddr *)&clientAddr, sizeof(clientAddr));
 	}
-	if (command.commandType == getInt) {
+	if (nextCommand.type == get_int) {
 		if (data.ints.find(nextCommand.name) == data.ints.end()) {
-			sendto(CPORT, &(INT_MIN), sizeof(int), 0, clientAddr, sizeof(clientAddr));
+			sendto(CPORT, &min, sizeof(int), 0, (sockaddr *)&clientAddr, sizeof(clientAddr));
 		}
-		int returnVal = *data.ints.find(nextCommand.name);
-		sendto(CPORT, &(returnVal), sizeof(int), 0, clientAddr, sizeof(clientAddr));
+		int returnVal = data.ints[nextCommand.name];
+		sendto(CPORT, &(returnVal), sizeof(int), 0, (sockaddr *)&clientAddr, sizeof(clientAddr));
 	}
-	if (command.commandType == setInt) {
+	if (nextCommand.type == set_int) {
 		if (data.ints.find(nextCommand.name) == data.ints.end()) {
-			sendto(CPORT, &(-1), sizeof(int), 0, clientAddr, sizeof(clientAddr));
+			sendto(CPORT, &neg1, sizeof(int), 0, (sockaddr *)&clientAddr, sizeof(clientAddr));
 		}
 		data.ints[nextCommand.name] = nextCommand.argument;
-		sendto(CPORT, &(0), sizeof(int), 0, clientAddr, sizeof(clientAddr));
+		sendto(CPORT, &zero, sizeof(int), 0, (sockaddr *)&clientAddr, sizeof(clientAddr));
 	}
-	if (command.commandType == createBarrier) {
+	if (nextCommand.type == create_barrier) {
 		if (data.barriers.find(nextCommand.name) != data.barriers.end()) {
-			sendto(CPORT, &(-1), sizeof(int), 0, clientAddr, sizeof(clientAddr));
+			sendto(CPORT, &neg1, sizeof(int), 0, (sockaddr *)&clientAddr, sizeof(clientAddr));
 		}
-		Barrier newBar(nextCommand.clientID, myID);
+		Barrier newBar(nextCommand.clientId, myID);
 		data.barriers[nextCommand.name] = newBar;
-		sendto(CPORT, &(0), sizeof(int), 0, clientAddr, sizeof(clientAddr));
+		sendto(CPORT, &zero, sizeof(int), 0, (sockaddr *)&clientAddr, sizeof(clientAddr));
 	}
-	if (command.commandType == wait_on_barrier) {
+	if (nextCommand.type == wait_on_barrier) {
 		if (data.barriers.find(nextCommand.name) == data.barriers.end()) {
-			sendto(CPORT, &(-1), sizeof(int), 0, clientAddr, sizeof(clientAddr));
+			sendto(CPORT, &neg1, sizeof(int), 0, (sockaddr *)&clientAddr, sizeof(clientAddr));
 		}
 		Barrier bar = data.barriers[nextCommand.name];
-		bool needToNotify = bar.clientWait(nextCommand.clientID);
+		bool needToNotify = bar.clientWait(nextCommand.clientId);
 		if (needToNotify) {
 			list<CID> clientsToNotify;
 			bar.clientsToNotify(myID, clientsToNotify);
 			for (auto& client : clientsToNotify) {
 				clientAddr.sin_addr.s_addr = client;
-				sendto(CPORT, &(0), sizeof(int), 0, clientAddr, sizeof(clientAddr));
+				sendto(CPORT, &zero, sizeof(int), 0, (sockaddr *)&clientAddr, sizeof(clientAddr));
 			}
 		}
 	}
@@ -198,7 +202,7 @@ void processCommandsThread(void* args) {
 	dataContainer data;
 	for(;;) {
 		command commandToProcess = getNextCommand();
-		processCommand(commandToProcess);
+		processCommand(commandToProcess, data);
 	}
 }
 
