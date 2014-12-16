@@ -147,11 +147,52 @@ command getNextComand() {
 }
 
 void processCommand(command& nextCommand, dataContainer& data) {
-	clientAddr.sin_addr.s_addr = nextCommand.clientID;;
+	clientAddr.sin_addr.s_addr = nextCommand.clientID;
 	if (command.commandType == createInt) {
 		if (data.ints.find(nextCommand.name) != data.ints.end()) {
-		  sendto(CPORT, &(-1), sizeof(int), 0, addr, sizeof(curr_pair.second) 
+			sendto(CPORT, &(-1), sizeof(int), 0, clientAddr, sizeof(clientAddr));
+		}
 		data.ints.insert(pair<int,int>(nextCommand.name, nextCommand.argument);
+		sendto(CPORT, &(0), sizeof(int), 0, clientAddr, sizeof(clientAddr));
+	}
+	if (command.commandType == getInt) {
+		if (data.ints.find(nextCommand.name) == data.ints.end()) {
+			sendto(CPORT, &(INT_MIN), sizeof(int), 0, clientAddr, sizeof(clientAddr));
+		}
+		int returnVal = *data.ints.find(nextCommand.name);
+		sendto(CPORT, &(returnVal), sizeof(int), 0, clientAddr, sizeof(clientAddr));
+	}
+	if (command.commandType == setInt) {
+		if (data.ints.find(nextCommand.name) == data.ints.end()) {
+			sendto(CPORT, &(-1), sizeof(int), 0, clientAddr, sizeof(clientAddr));
+		}
+		data.ints[nextCommand.name] = nextCommand.argument;
+		sendto(CPORT, &(0), sizeof(int), 0, clientAddr, sizeof(clientAddr));
+	}
+	if (command.commandType == createBarrier) {
+		if (data.barriers.find(nextCommand.name) != data.barriers.end()) {
+			sendto(CPORT, &(-1), sizeof(int), 0, clientAddr, sizeof(clientAddr));
+		}
+		Barrier newBar(nextCommand.clientID, myID);
+		data.barriers[nextCommand.name] = newBar;
+		sendto(CPORT, &(0), sizeof(int), 0, clientAddr, sizeof(clientAddr));
+	}
+	if (command.commandType == wait_on_barrier) {
+		if (data.barriers.find(nextCommand.name) == data.barriers.end()) {
+			sendto(CPORT, &(-1), sizeof(int), 0, clientAddr, sizeof(clientAddr));
+		}
+		Barrier bar = data.barriers[nextCommand.name];
+		bool needToNotify = bar.clientWait(nextCommand.clientID);
+		if (needToNotify) {
+			list<CID> clientsToNotify;
+			bar.clientsToNotify(myID, clientsToNotify);
+			for (auto& client : clientsToNotify) {
+				clientAddr.sin_addr.s_addr = client;
+				sendto(CPORT, &(0), sizeof(int), 0, clientAddr, sizeof(clientAddr));
+			}
+		}
+	}
+}
 
 void processCommandsThread(void* args) {
 	dataContainer data;
