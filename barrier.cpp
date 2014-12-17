@@ -3,6 +3,10 @@
 typedef pair<SID, bool> ServBool;
 typedef pair<CID, ServBool> elem;
 
+Barrier::Barrier() {
+	//Nothing to do
+}
+
 Barrier::Barrier(CID client, SID server) {
 	elem newElem = elem(client, ServBool(SID, false));
 	dara.insert(newElem);
