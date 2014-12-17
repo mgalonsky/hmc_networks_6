@@ -4,24 +4,24 @@
 #define LOCK
 
 class Lock {
+public:
 	CID holder;
 	queue<pair<CID, SID>> waiting;
+ 
+	//Creates a new lock
+	Lock();
 
-	public: 
-		//Creates a new lock
-		Lock();
+	//try and grab the lock
+	//returns true if the lock was immediately obtained
+	//returns false if the client was put int the waiting queue
+	bool getLock(CID client, SID server);
+	
+	//release the lock
+	//this returns the SID of the server responsible for the client from waiting which was granted the lock
+	//if the client does not hold the lock then this does nothing and returns the same SID as if there was no one waiting
+	SID releaseLock(CID client);
 
-		//try and grab the lock
-		//returns true if the lock was immediately obtained
-		//returns false if the client was put int the waiting queue
-		bool getLock(CID client, SID server);
-		
-		//release the lock
-		//this returns the SID of the server responsible for the client from waiting which was granted the lock
-		//if the client does not hold the lock then this does nothing and returns the same SID as if there was no one waiting
-		SID releaseLock(CID client);
-
-		//getter for holder
-		CID lockHolder();
+	//getter for holder
+	CID lockHolder();
 };
 #endif
