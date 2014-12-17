@@ -1,7 +1,8 @@
-#include "utilities.hpp"
-
 #ifndef BARRIER
 #define BARRIER
+
+#include "utilities.hpp"
+#include <map>
 
 class Barrier {
 	map<CID, pair<SID, bool>> data;
