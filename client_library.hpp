@@ -10,7 +10,7 @@
 #ifndef CLIENT_LIBRARY
 #define CLIENT_LIBRARY
 
-SID myID;
+CID clientID;
 map<SID, sockaddr_in> idToSockaddr;
 
 /*
@@ -54,4 +54,4 @@ int createBarrier(int barrierNum);
  */
 int waitOnBarrier(int barrierNum);
 
-#endif CLIENT_LIBRARY
+#endif 
