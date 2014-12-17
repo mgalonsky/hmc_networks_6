@@ -7,6 +7,9 @@ class Barrier {
 	map<CID, pair<SID, bool>> data;
 	
 public:
+	//Needs a default constructor
+	Barrier();
+	
 	//Creates a new barrier
 	Barrier(CID client, SID server);
 	

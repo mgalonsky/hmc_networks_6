@@ -4,10 +4,10 @@
 #define LOCK
 
 class Lock {
-public:
 	CID holder;
 	queue<pair<CID, SID>> waiting;
- 
+
+public:
 	//Creates a new lock
 	Lock();
 
