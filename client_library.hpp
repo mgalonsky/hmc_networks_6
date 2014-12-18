@@ -10,6 +10,8 @@
 #include "utilities.hpp"
 #include <map>
 
+extern CID clientID;
+
 /*
  * Creates a lock of the specified number.  Returns 0 if succesful and -1 on
  * error.
