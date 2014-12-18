@@ -1,7 +1,8 @@
-#include "utilities.hpp"
-
 #ifndef LOCK
 #define LOCK
+
+#include "utilities.hpp"
+#include <queue>
 
 class Lock {
 	CID holder;

@@ -8,10 +8,10 @@ Lock::Lock() {
 
 bool Lock::getLock(CID client, SID server) {
 	if (holder == 0) {
-		holder = CID;
+		holder = client;
 		return true;
 	}
-	waiting.push_back(pair(client, server));
+	waiting.push(pair<CID, SID>(client, server));
 	return false;
 }
 

@@ -19,7 +19,7 @@ FILETRANSFER_OBJS =
 
 all:    $(TARGETS)
 
-server: server.o utilities.o barrier.o
+server: server.o utilities.o barrier.o lock.o
 	$(CXX) -o server server.o utilities.o barrier.o $(CXXFLAGS)
 
 client: client.o client_library.o utilities.o

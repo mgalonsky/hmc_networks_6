@@ -10,7 +10,7 @@ using namespace std;
 
 sockaddr_in protectedSock;
 
-sendToProtectedServer(string message) {
+void sendToProtectedServer(string message) {
 	//take a string and send it to the protected server
 	//first convert the string to a char array
 	//then send a udp packet with the size of that array
@@ -61,4 +61,5 @@ int main(int argc, char**argv) {
 	//release protected server lock
 
 	//all done
+	exit(0);
 }

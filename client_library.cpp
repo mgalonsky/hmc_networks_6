@@ -31,9 +31,9 @@ int createLock(int lockNum) {
 	commandToSend.serverId = nextServerID();
 	sockaddr_in serveraddr = idToSockaddr[commandToSend.serverId];
 	commandToSend.clientId = clientID;
-	commandToSend.commandType = create_lock;
+	commandToSend.type = create_lock;
 	commandToSend.name = lockNum;
-	sendTo(CPORT, &commandToSend, (sockaddr*)&serveraddr);
+	sendTo(CPORT, commandToSend, (sockaddr*)&serveraddr);
 	int error = recieveIntFrom(CPORT);
 	return error;
 }
@@ -43,9 +43,9 @@ int getLock(int lockNum) {
 	commandToSend.serverId = nextServerID();
 	sockaddr_in serveraddr = idToSockaddr[commandToSend.serverId];
 	commandToSend.clientId = clientID;
-	commandToSend.commandType = get_lock;
+	commandToSend.type = get_lock;
 	commandToSend.name = lockNum;
-	sendTo(CPORT, &commandToSend, (sockaddr*)&serveraddr);
+	sendTo(CPORT, commandToSend, (sockaddr*)&serveraddr);
 	int error = recieveIntFrom(CPORT);
 	return error;
 }
@@ -55,9 +55,9 @@ int releaseLock(int lockNum) {
 	commandToSend.serverId = nextServerID();
 	sockaddr_in serveraddr = idToSockaddr[commandToSend.serverId];
 	commandToSend.clientId = clientID;
-	commandToSend.commandType = release_lock;
+	commandToSend.type = release_lock;
 	commandToSend.name = lockNum;
-	sendTo(CPORT, &commandToSend, (sockaddr*)&serveraddr);
+	sendTo(CPORT, commandToSend, (sockaddr*)&serveraddr);
 	int error = recieveIntFrom(CPORT);
 	return error;
 }
@@ -67,10 +67,10 @@ int createInt(int intNum, int value) {
 	commandToSend.serverId = nextServerID();
 	sockaddr_in serveraddr = idToSockaddr[commandToSend.serverId];
 	commandToSend.clientId = clientID;
-	commandToSend.commandType = create_int;
+	commandToSend.type = create_int;
 	commandToSend.name = intNum;
 	commandToSend.argument = value;
-	sendTo(CPORT, &commandToSend, (sockaddr*)&serveraddr);
+	sendTo(CPORT, commandToSend, (sockaddr*)&serveraddr);
 	int error = recieveIntFrom(CPORT);
 	return error;
 }
@@ -80,9 +80,9 @@ int getInt(int intNum) {
 	commandToSend.serverId = nextServerID();
 	sockaddr_in serveraddr = idToSockaddr[commandToSend.serverId];
 	commandToSend.clientId = clientID;
-	commandToSend.commandType = get_int;
+	commandToSend.type = get_int;
 	commandToSend.name = intNum;
-	sendTo(CPORT, &commandToSend, (sockaddr*)&serveraddr);
+	sendTo(CPORT, commandToSend, (sockaddr*)&serveraddr);
 	int value = recieveIntFrom(CPORT);
 	return value;
 }
@@ -92,10 +92,10 @@ int setInt(int intNum, int value) {
 	commandToSend.serverId = nextServerID();
 	sockaddr_in serveraddr = idToSockaddr[commandToSend.serverId];
 	commandToSend.clientId = clientID;
-	commandToSend.commandType = set_int;
+	commandToSend.type = set_int;
 	commandToSend.name = intNum;
 	commandToSend.argument = value;
-	sendTo(CPORT, &commandToSend, (sockaddr*)&serveraddr);
+	sendTo(CPORT, commandToSend, (sockaddr*)&serveraddr);
 	int error = recieveIntFrom(CPORT);
 	return error;
 }
@@ -105,11 +105,11 @@ int createBarrier(int barrierNum) {
 	commandToSend.serverId = nextServerID();
 	sockaddr_in serveraddr = idToSockaddr[commandToSend.serverId];
 	commandToSend.clientId = clientID;
-	commandToSend.commandType = create_barrier;
-	commandToSend.name = intNum;
-	sendTo(CPORT, &commandToSend, (sockaddr*)&serveraddr);
+	commandToSend.type = create_barrier;
+	commandToSend.name = barrierNum;
+	sendTo(CPORT, commandToSend, (sockaddr*)&serveraddr);
 	int error = recieveIntFrom(CPORT);
-	return value;
+	return error;
 }
 
 int waitOnBarrier(int barrierNum) {
@@ -117,9 +117,9 @@ int waitOnBarrier(int barrierNum) {
 	commandToSend.serverId = nextServerID();
 	sockaddr_in serveraddr = idToSockaddr[commandToSend.serverId];
 	commandToSend.clientId = clientID;
-	commandToSend.commandType = wait_on_barrier;
-	commandToSend.name = intNum;
-	sendTo(CPORT, &commandToSend, (sockaddr*)&serveraddr);
+	commandToSend.type = wait_on_barrier;
+	commandToSend.name = barrierNum;
+	sendTo(CPORT, commandToSend, (sockaddr*)&serveraddr);
 	int error = recieveIntFrom(CPORT);
-	return value;
+	return error; 
 }

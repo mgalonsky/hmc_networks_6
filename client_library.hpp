@@ -8,7 +8,7 @@
 #include <map>
 
 #ifndef CLIENT_LIBRARY
-#define CLIENT_LIBRARY
+#define CLIENT_LIBRARY 1
 
 CID clientID;
 map<SID, sockaddr_in> idToSockaddr;
