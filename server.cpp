@@ -147,43 +147,58 @@ command getNextCommand() {
 	return message.clientCommand;
 }
 
+void sendToClientIfNec(int* data, SID serverID) {
+	if (serverID != myID) {
+		return;
+	}
+	sendto(CPORT, data, sizeof(int), 0, (sockaddr *)&clientAddr, sizeof(clientAddr));
+}
+
+
 void processCommand(command& nextCommand, dataContainer& data) {
+	// SendToClientIfNec relies on this value being set here
 	clientAddr.sin_addr.s_addr = nextCommand.clientId;
+
 	int neg1 = -1;
 	int zero = 0;
 	int min = INT_MIN;
 	if (nextCommand.type == create_int) {
 		if (data.ints.find(nextCommand.name) != data.ints.end()) {
-			sendto(CPORT, &neg1, sizeof(int), 0, (sockaddr *)&clientAddr, sizeof(clientAddr));
+			sendToClientIfNec(&neg1, nextCommand.serverId);
+		} else {
+			data.ints.insert(pair<int,int>(nextCommand.name, nextCommand.argument));
+			sendToClientIfNec(&zero, nextCommand.serverId);
 		}
-		data.ints.insert(pair<int,int>(nextCommand.name, nextCommand.argument));
-		sendto(CPORT, &zero, sizeof(int), 0, (sockaddr *)&clientAddr, sizeof(clientAddr));
 	}
 	if (nextCommand.type == get_int) {
 		if (data.ints.find(nextCommand.name) == data.ints.end()) {
-			sendto(CPORT, &min, sizeof(int), 0, (sockaddr *)&clientAddr, sizeof(clientAddr));
+			sendToClientIfNec(&min, nextCommand.serverId);
+		} else {
+			int returnVal = data.ints[nextCommand.name];
+			sendToClientIfNec(&returnVal, nextCommand.serverId);
 		}
-		int returnVal = data.ints[nextCommand.name];
-		sendto(CPORT, &(returnVal), sizeof(int), 0, (sockaddr *)&clientAddr, sizeof(clientAddr));
 	}
 	if (nextCommand.type == set_int) {
 		if (data.ints.find(nextCommand.name) == data.ints.end()) {
-			sendto(CPORT, &neg1, sizeof(int), 0, (sockaddr *)&clientAddr, sizeof(clientAddr));
+			sendToClientIfNec(&neg1, nextCommand.serverId);
+		} else {
+			data.ints[nextCommand.name] = nextCommand.argument;
+			sendToClientIfNec(&zero, nextCommand.serverId);
 		}
-		data.ints[nextCommand.name] = nextCommand.argument;
-		sendto(CPORT, &zero, sizeof(int), 0, (sockaddr *)&clientAddr, sizeof(clientAddr));
 	}
 	if (nextCommand.type == create_barrier) {
-		if (data.barriers.find(nextCommand.name) != data.barriers.end()) {
-			sendto(CPORT, &neg1, sizeof(int), 0, (sockaddr *)&clientAddr, sizeof(clientAddr));
+		if (data.barriers.find(nextCommand.name) == data.barriers.end()) {
+			Barrier newBar(nextCommand.clientId, nextCommand.serverId);
+			data.barriers[nextCommand.name] = newBar;
+			sendToClientIfNec(&zero, nextCommand.serverId);
+		} else {
+			data.barriers[nextCommand.name].addClient(nextCommand.clientId, nextCommand.serverId);
+			sendToClientIfNec(&zero, nextCommand.serverId);
 		}
-		Barrier newBar(nextCommand.clientId, myID);
-		data.barriers[nextCommand.name] = newBar;
-		sendto(CPORT, &zero, sizeof(int), 0, (sockaddr *)&clientAddr, sizeof(clientAddr));
 	}
 	if (nextCommand.type == wait_on_barrier) {
 		if (data.barriers.find(nextCommand.name) == data.barriers.end()) {
-			sendto(CPORT, &neg1, sizeof(int), 0, (sockaddr *)&clientAddr, sizeof(clientAddr));
+			sendToClientIfNec(&neg1, nextCommand.serverId);
 		}
 		Barrier bar = data.barriers[nextCommand.name];
 		bool needToNotify = bar.clientWait(nextCommand.clientId);
@@ -194,6 +209,35 @@ void processCommand(command& nextCommand, dataContainer& data) {
 				clientAddr.sin_addr.s_addr = client;
 				sendto(CPORT, &zero, sizeof(int), 0, (sockaddr *)&clientAddr, sizeof(clientAddr));
 			}
+		}
+	}
+	if (nextCommand.type == create_lock) {
+		if (data.locks.find(nextCommand.name) != data.locks.end()) {
+			sendToClientIfNec(&neg1, nextCommand.serverId);
+		} else {
+			Lock newLock;
+			data.locks[nextCommand.name] = newLock;
+			sendToClientIfNec(&zero, nextCommand.serverId);
+		}
+	} 
+	if (nextCommand.type == get_lock) {
+		if (data.locks.find(nextCommand.name) == data.locks.end()) {
+			sendToClientIfNec(&neg1, nextCommand.serverId);
+		} else {
+			Lock& lockToProcess = data.locks[nextCommand.name];
+			bool gotLock = lockToProcess.getLock(nextCommand.clientId, nextCommand.serverId);
+			if (gotLock) {
+				sendToClientIfNec(&zero, nextCommand.serverId);
+			}
+		}
+	}
+	if (nextCommand.type == release_lock) {
+		if (data.locks.find(nextCommand.name) == data.locks.end()) {
+			sendToClientIfNec(&neg1, nextCommand.serverId);
+		} else {
+			Lock& lockToProcess = data.locks[nextCommand.name];
+			SID serverToGrantNext = lockToProcess.releaseLock(nextCommand.clientId);
+			sendToClientIfNec(&zero, serverToGrantNext);
 		}
 	}
 }
