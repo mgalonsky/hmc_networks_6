@@ -11,6 +11,12 @@
 #include <map>
 
 extern CID clientID;
+extern int udpSock;
+
+/*
+ * Sets up the client. Returns the file descriptor of its external port.
+ */
+void init(string configFile);
 
 /*
  * Creates a lock of the specified number.  Returns 0 if succesful and -1 on

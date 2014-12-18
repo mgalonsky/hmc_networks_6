@@ -4,6 +4,7 @@
 static list<SID> serverIDList;
 CID clientID;
 map<SID, sockaddr_in> idToSockaddr;
+int udpSock;
 
 SID nextServerID() {
 	auto iter = serverIDList.begin();
@@ -13,7 +14,7 @@ SID nextServerID() {
 	return *iter;
 }
 
-void init(string& configFileName) {
+void init(string configFileName) {
 	parseConfig(serverIDList, configFileName);
 	clientID = htonl(INADDR_ANY);
 
@@ -25,6 +26,8 @@ void init(string& configFileName) {
 		serveraddr.sin_addr.s_addr = serverID;
 		idToSockaddr.insert(pair<SID, sockaddr_in>(serverID, serveraddr));
 	}
+
+	udpSock = setUpUdpSock(CPORT);
 }
 
 
@@ -35,8 +38,8 @@ int createLock(int lockNum) {
 	commandToSend.clientId = clientID;
 	commandToSend.type = create_lock;
 	commandToSend.name = lockNum;
-	sendTo(CPORT, commandToSend, (sockaddr*)&serveraddr);
-	int error = recieveIntFrom(CPORT);
+	sendTo(udpSock, commandToSend, (sockaddr*)&serveraddr);
+	int error = recieveIntFrom(udpSock);
 	return error;
 }
 
@@ -47,8 +50,8 @@ int getLock(int lockNum) {
 	commandToSend.clientId = clientID;
 	commandToSend.type = get_lock;
 	commandToSend.name = lockNum;
-	sendTo(CPORT, commandToSend, (sockaddr*)&serveraddr);
-	int error = recieveIntFrom(CPORT);
+	sendTo(udpSock, commandToSend, (sockaddr*)&serveraddr);
+	int error = recieveIntFrom(udpSock);
 	return error;
 }
 
@@ -59,8 +62,8 @@ int releaseLock(int lockNum) {
 	commandToSend.clientId = clientID;
 	commandToSend.type = release_lock;
 	commandToSend.name = lockNum;
-	sendTo(CPORT, commandToSend, (sockaddr*)&serveraddr);
-	int error = recieveIntFrom(CPORT);
+	sendTo(udpSock, commandToSend, (sockaddr*)&serveraddr);
+	int error = recieveIntFrom(udpSock);
 	return error;
 }
 
@@ -72,8 +75,8 @@ int createInt(int intNum, int value) {
 	commandToSend.type = create_int;
 	commandToSend.name = intNum;
 	commandToSend.argument = value;
-	sendTo(CPORT, commandToSend, (sockaddr*)&serveraddr);
-	int error = recieveIntFrom(CPORT);
+	sendTo(udpSock, commandToSend, (sockaddr*)&serveraddr);
+	int error = recieveIntFrom(udpSock);
 	return error;
 }
 
@@ -84,8 +87,8 @@ int getInt(int intNum) {
 	commandToSend.clientId = clientID;
 	commandToSend.type = get_int;
 	commandToSend.name = intNum;
-	sendTo(CPORT, commandToSend, (sockaddr*)&serveraddr);
-	int value = recieveIntFrom(CPORT);
+	sendTo(udpSock, commandToSend, (sockaddr*)&serveraddr);
+	int value = recieveIntFrom(udpSock);
 	return value;
 }
 
@@ -97,8 +100,8 @@ int setInt(int intNum, int value) {
 	commandToSend.type = set_int;
 	commandToSend.name = intNum;
 	commandToSend.argument = value;
-	sendTo(CPORT, commandToSend, (sockaddr*)&serveraddr);
-	int error = recieveIntFrom(CPORT);
+	sendTo(udpSock, commandToSend, (sockaddr*)&serveraddr);
+	int error = recieveIntFrom(udpSock);
 	return error;
 }
 
@@ -109,8 +112,8 @@ int createBarrier(int barrierNum) {
 	commandToSend.clientId = clientID;
 	commandToSend.type = create_barrier;
 	commandToSend.name = barrierNum;
-	sendTo(CPORT, commandToSend, (sockaddr*)&serveraddr);
-	int error = recieveIntFrom(CPORT);
+	sendTo(udpSock, commandToSend, (sockaddr*)&serveraddr);
+	int error = recieveIntFrom(udpSock);
 	return error;
 }
 
@@ -121,7 +124,7 @@ int waitOnBarrier(int barrierNum) {
 	commandToSend.clientId = clientID;
 	commandToSend.type = wait_on_barrier;
 	commandToSend.name = barrierNum;
-	sendTo(CPORT, commandToSend, (sockaddr*)&serveraddr);
-	int error = recieveIntFrom(CPORT);
+	sendTo(udpSock, commandToSend, (sockaddr*)&serveraddr);
+	int error = recieveIntFrom(udpSock);
 	return error; 
 }

@@ -8,18 +8,23 @@
 
 using namespace std;
 
-sockaddr_in protectedSock;
+sockaddr_in protectedAddr;
 
 void sendToProtectedServer(string message) {
-	//take a string and send it to the protected server
-	//first convert the string to a char array
-	//then send a udp packet with the size of that array
-	//then send a udp packet with that array
+	int len = message.length();
+	const char* cstr = message.c_str();
+
+	sendto(udpSock, (void*)&len, sizeof(len), 0, (sockaddr*)&protectedAddr, sizeof(protectedAddr));
+	sendto(udpSock, (void*)cstr, sizeof(cstr), 0, (sockaddr*)&protectedAddr, sizeof(protectedAddr));
 }
 
 int main(int argc, char**argv) {
-	//first init yourself
-	//note that your id is in clientID
+	init("configFile"); 
+	//note that your id is in clientID and the udp socket is udpSock
+
+	protectedAddr.sin_family = AF_INET;
+	protectedAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	protectedAddr.sin_port = htons((unsigned short) CPORT);
 	//next set up the sockaddr for the protected server
 
 	//first create an int
