@@ -61,5 +61,4 @@ int main(int argc, char**argv) {
 	//release protected server lock
 
 	//all done
-	exit(0);
 }

@@ -4,14 +4,11 @@
  * server responds.
  */
 
+#ifndef CLIENTLIB
+#define CLIENTLIB 1
+
 #include "utilities.hpp"
 #include <map>
-
-#ifndef CLIENT_LIBRARY
-#define CLIENT_LIBRARY 1
-
-CID clientID;
-map<SID, sockaddr_in> idToSockaddr;
 
 /*
  * Creates a lock of the specified number.  Returns 0 if succesful and -1 on

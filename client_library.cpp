@@ -2,6 +2,8 @@
 #include <cstdlib>
 
 static list<SID> serverIDList;
+CID clientID;
+map<SID, sockaddr_in> idToSockaddr;
 
 SID nextServerID() {
 	auto iter = serverIDList.begin();
