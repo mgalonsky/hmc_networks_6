@@ -16,7 +16,7 @@ extern int udpSock;
 /*
  * Sets up the client. Returns the file descriptor of its external port.
  */
-void init(string configFile);
+void init(string configFile, char* ip);
 
 /*
  * Creates a lock of the specified number.  Returns 0 if succesful and -1 on

@@ -12,11 +12,10 @@ using namespace std;
 
 int main(int argc, char**argv) {
 	int udpSock = setUpUdpSock(CPORT);
-	int strlen;
+	char buf[30];
 
-	while(recvfrom(udpSock, (void*)&strlen, sizeof(strlen), 0, NULL, NULL) >= 0) {
-		char* buf = new char[strlen];
-		recvfrom(udpSock, (void*)&buf, sizeof(buf), 0, NULL, NULL);
-		cout << buf << endl;
+	cerr << "starting loop" << endl;
+	while(recvfrom(udpSock, (void*)&buf, sizeof(buf), 0, NULL, NULL) >= 0) {
+		cerr << buf << endl;
 	}
 }

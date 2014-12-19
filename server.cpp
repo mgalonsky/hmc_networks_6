@@ -15,6 +15,7 @@
 #include <queue>
 #include "barrier.hpp"
 #include "lock.hpp"
+#include <arpa/inet.h>
 
 using namespace std;
 
@@ -60,8 +61,6 @@ pthread_cond_t timeSignal;
 sockaddr_in clientAddr;
 
 int init(string configFile) {
-	//set myID
-	myID = htonl(INADDR_ANY);
 	//set up serverMap
 	list<SID> serverList;
 	parseConfig(serverList, configFile);
@@ -71,6 +70,7 @@ int init(string configFile) {
 	clientAddr.sin_family = AF_INET;
 	clientAddr.sin_port = htons((unsigned short) CPORT);
 	for (SID serverID : serverList) {
+		cerr << "serverID is:" << serverID << endl;
 		serveraddr.sin_addr.s_addr = serverID;
 		serverMap.insert(pair<SID, sockaddr_in>(serverID, serveraddr));
 	}
@@ -164,7 +164,7 @@ void* queueManager(void* args) {
 		}
 		pthread_mutex_unlock(&timeLock);
 
-		if(!message.isPing) {
+		if(message.isPing == false) {
 			//put command in the queue
 			pthread_mutex_lock(&queueLock);
 			commandQueue.push(message);
@@ -305,6 +305,12 @@ int main(int argc, char**argv) {
 	if (init("configFile") < 0) {
 		exit(1);
 	}
+	//set my id based on command line input
+	in_addr serverIDwrapper;
+	inet_pton(AF_INET, argv[1], &serverIDwrapper);
+	myID = serverIDwrapper.s_addr;
+
+	cerr << "my id is:" << myID << endl;
 	//start all the threads
 	pthread_t tid;
 	pthread_create( &tid, NULL, pinger, NULL);

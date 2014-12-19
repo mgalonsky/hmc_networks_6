@@ -7,22 +7,25 @@
 #include "client_library.hpp"
 #include <iostream>
 #include <arpa/inet.h>
+#include <cstring>
 
 using namespace std;
 
 sockaddr_in protectedAddr;
 
 void sendToProtectedServer(string message) {
-	int len = message.length();
+	char buf[50];
 	const char* cstr = message.c_str();
+	strcpy(buf, cstr);
+//	cerr << "message is:" << buf << endl;
 
-	sendto(udpSock, (void*)&len, sizeof(len), 0, (sockaddr*)&protectedAddr, sizeof(protectedAddr));
-	sendto(udpSock, (void*)cstr, sizeof(cstr), 0, (sockaddr*)&protectedAddr, sizeof(protectedAddr));
+	sendto(udpSock, (void*)&buf, sizeof(buf), 0, (sockaddr*)&protectedAddr, sizeof(protectedAddr));
 }
 
 int main(int argc, char**argv) {
-	init("configFile"); 
+	init("configFile", argv[1]); 
 	//note that your id is in clientID and the udp socket is udpSock
+	cerr << "finished init. My id is " << clientID << endl;
 
 	//next set up the sockaddr for the protected server
 	in_addr inaddr;
@@ -30,16 +33,26 @@ int main(int argc, char**argv) {
 	inet_pton(AF_INET, "10.99.0.9", &inaddr);
 	protectedAddr.sin_addr = inaddr;
 	protectedAddr.sin_port = htons((unsigned short) CPORT);
+	cerr << "going to check in with protectedServer" << endl;
+	//check in with protected server
+	sendToProtectedServer("test message");
 
 	//first create an int
 	if (createInt(500,0) < 0) {
 		cerr << "error creating int with name 500" << endl;
 	}
+	else {
+		cerr << "successfully created int 500" << endl;
+	}
+	cerr << "passed server creation test" << endl;
+/*
 	//then create a lock for the protected server
 	if (createLock(42) < 0) {
 		cerr << "error creating lock with name 42" << endl;
 	}
-	
+	else {
+		cerr << "successfully created lock 42" << endl;
+	}
 	//create a barrier
 	createBarrier(0);
 
@@ -103,6 +116,7 @@ int main(int argc, char**argv) {
 	sendToProtectedServer("put a better string here");
 	//release protected server lock
 	releaseLock(42);
-	//all done
+*/	
+	cerr << "all done" << endl;
 	exit(0);
 }

@@ -1,5 +1,6 @@
 #include "client_library.hpp"
 #include <cstdlib>
+#include <arpa/inet.h>
 
 static list<SID> serverIDList;
 CID clientID;
@@ -14,9 +15,11 @@ SID nextServerID() {
 	return *iter;
 }
 
-void init(string configFileName) {
+void init(string configFileName, char* ip) {
 	parseConfig(serverIDList, configFileName);
-	clientID = htonl(INADDR_ANY);
+	in_addr serverIDwrapper;
+	inet_pton(AF_INET, ip, &serverIDwrapper);
+	clientID = serverIDwrapper.s_addr;
 
 	// Set up server sock addr for 
 	sockaddr_in serveraddr;
