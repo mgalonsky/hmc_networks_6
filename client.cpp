@@ -6,6 +6,7 @@
 
 #include "client_library.hpp"
 #include <iostream>
+#include <arpa/inet.h>
 
 using namespace std;
 
@@ -24,8 +25,10 @@ int main(int argc, char**argv) {
 	//note that your id is in clientID and the udp socket is udpSock
 
 	//next set up the sockaddr for the protected server
+	in_addr inaddr;
 	protectedAddr.sin_family = AF_INET;
-	protectedAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	inet_pton(AF_INET, "10.99.0.9", &inaddr);
+	protectedAddr.sin_addr = inaddr;
 	protectedAddr.sin_port = htons((unsigned short) CPORT);
 
 	//first create an int
