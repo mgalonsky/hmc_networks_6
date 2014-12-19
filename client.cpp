@@ -40,13 +40,21 @@ int main(int argc, char**argv) {
 	cerr << "going to test ints" << endl;
 	if (createInt(500,0) < 0) {
 		cerr << "error creating int with name 500" << endl;
+		int test = getInt(500);
+		if (test != 0) {
+			cerr << "error in getInt" << endl;
+		}
+		setInt(500, 5);
+		test = getInt(500);
+		if (test != 5) {
+			cerr << "error in setInt" << endl;
+		}
 	}
 	else {
 		cerr << "successfully created int 500" << endl;
 	}
-	cerr << "passed server creation test" << endl;
 /*
-	//then create a lock for the protected server
+	cerr << "lock creation test" << endl;
 	if (createLock(42) < 0) {
 		cerr << "error creating lock with name 42" << endl;
 	}
@@ -54,14 +62,16 @@ int main(int argc, char**argv) {
 		cerr << "successfully created lock 42" << endl;
 	}
 	//create a barrier
-	createBarrier(0);
+	if (createBarrier(0) < 0) {
+		cerr << "error in barrier creation" << endl;
+	}
 
 	//now get the protected server lock
 	getLock(42);
 	//get the int and store the value locally
 	int local = getInt(500);
 	//send the ints value and your id to the protected server
-	sendToProtectedServer("put a better string here");
+	sendToProtectedServer("(myID here) got (intValue here)");
 	//set the int to have a value one larger than the one you got
 	setInt(500, local+1);
 	//release the lock
@@ -69,6 +79,8 @@ int main(int argc, char**argv) {
 
 	//wait on the barrier
 	waitOnBarrier(0);
+	//check in again with protected server
+	sendToProtectedServer("(myID here) waiting on barreir");
 	
 	//try to wait on a barrier
 	//confirm you get an error (thus the barrier is destroyed)
@@ -113,7 +125,7 @@ int main(int argc, char**argv) {
 	//get the protected server lock
 	getLock(42);
 	//tell the protected server your id and your ints value (which should be the number of clients)
-	sendToProtectedServer("put a better string here");
+	sendToProtectedServer("(int name) ended up with the value (temp)");
 	//release protected server lock
 	releaseLock(42);
 */	
