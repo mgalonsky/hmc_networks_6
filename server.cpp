@@ -106,6 +106,21 @@ int sendToServers(serverMessage message) {
 	return 0;
 }
 
+void* listenToClients(void* args) {
+	command commandToRecieve;
+	serverMessage message;
+	//Loop forever listening for incoming commands
+	while (recieveCommandFrom(CPORT, commandToRecieve)) {
+		//Create a server mesasge
+		message.time = time(NULL);
+		message.source = myID;
+		message.isPing = false;
+		message.clientCommand = commandToRecieve;
+		sendToServers(message);
+	}
+	return NULL;
+}
+
 void* pinger(void* ptr) {
 	serverMessage ping;
 	//detach thread
@@ -123,10 +138,9 @@ void* pinger(void* ptr) {
 		//wait for 900 milliseconds before repeating
 		sleep(900);
 	}
-
 }
 
-void queueManager(void* args) {
+void* queueManager(void* args) {
 	serverMessage message;
 	time_t oldTime;
 	pair<SID, time_t> currMin;
@@ -158,6 +172,7 @@ void queueManager(void* args) {
 			pthread_mutex_unlock(&queueLock);
 		}
 	}
+	return nullptr;
 }
 
 command getNextCommand() {
@@ -276,12 +291,13 @@ void processCommand(command& nextCommand, dataContainer& data) {
 	}
 }
 
-void processCommandsThread(void* args) {
+void* processCommandsThread(void* args) {
 	dataContainer data;
 	for(;;) {
 		command commandToProcess = getNextCommand();
 		processCommand(commandToProcess, data);
 	}
+	return nullptr;
 }
 
 int main(int argc, char**argv) {
@@ -290,6 +306,11 @@ int main(int argc, char**argv) {
 		exit(1);
 	}
 	//start all the threads
+	pthread_t tid;
+	pthread_create( &tid, NULL, pinger, NULL);
+	pthread_create( &tid, NULL, processCommandsThread, NULL);
+	pthread_create( &tid, NULL, queueManager, NULL);
+	pthread_create( &tid, NULL, listenToClients, NULL);
 }
 
 
