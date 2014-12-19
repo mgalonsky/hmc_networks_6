@@ -4,14 +4,19 @@
  * server responds.
  */
 
+#ifndef CLIENTLIB
+#define CLIENTLIB 1
+
 #include "utilities.hpp"
 #include <map>
 
-#ifndef CLIENT_LIBRARY
-#define CLIENT_LIBRARY
+extern CID clientID;
+extern int udpSock;
 
-CID clientID;
-map<SID, sockaddr_in> idToSockaddr;
+/*
+ * Sets up the client. Returns the file descriptor of its external port.
+ */
+void init(string configFile);
 
 /*
  * Creates a lock of the specified number.  Returns 0 if succesful and -1 on
