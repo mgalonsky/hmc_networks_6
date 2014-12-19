@@ -33,11 +33,11 @@ int main(int argc, char**argv) {
 	inet_pton(AF_INET, "10.99.0.9", &inaddr);
 	protectedAddr.sin_addr = inaddr;
 	protectedAddr.sin_port = htons((unsigned short) CPORT);
-	cerr << "going to check in with protectedServer" << endl;
 	//check in with protected server
 	sendToProtectedServer("test message");
 
 	//first create an int
+	cerr << "going to test ints" << endl;
 	if (createInt(500,0) < 0) {
 		cerr << "error creating int with name 500" << endl;
 	}

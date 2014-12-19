@@ -1,5 +1,6 @@
 #include "client_library.hpp"
 #include <cstdlib>
+#include <iostream>
 #include <arpa/inet.h>
 
 static list<SID> serverIDList;
@@ -73,6 +74,7 @@ int releaseLock(int lockNum) {
 int createInt(int intNum, int value) {
 	command commandToSend;
 	commandToSend.serverId = nextServerID();
+	cerr << "sending to serverid:" << commandToSend.serverId << endl;
 	sockaddr_in serveraddr = idToSockaddr[commandToSend.serverId];
 	commandToSend.clientId = clientID;
 	commandToSend.type = create_int;

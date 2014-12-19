@@ -16,8 +16,8 @@
 
 using namespace std;
 
-#define SPORT 1234
-#define CPORT 4321
+#define SPORT 4444
+#define CPORT 5555
 
 enum commandType {
 	create_lock,

@@ -84,22 +84,14 @@ int init(string configFile) {
 	pthread_cond_init(&queueSignal, NULL);
 	pthread_cond_init(&timeSignal, NULL);
 
-	//set up ports (both Server and Client)
-	if ((serverPort = setUpUdpSock(SPORT)) < 0) {
-		cerr << "error setting up server port" << endl;
-		return -1;
-	}
-	if ((clientPort = setUpUdpSock(CPORT)) < 0) {
-		cerr << "error setting up client port" << endl;
-		return -1;
-	}
 	return 0;
 }
 
-int sendToServers(serverMessage message) {
+int sendToServers(serverMessage message, int socket) {
 	for (auto &curr_pair : serverMap) {
 		sockaddr* addr = (sockaddr *) &curr_pair.second;
-		if (sendto(serverPort, (void*)&message, sizeof(message), 0, addr, sizeof(curr_pair.second)) < 0) {
+		if (sendto(socket, (void*)&message, sizeof(message), 0, addr, sizeof(curr_pair.second)) < 0) {
+			cerr << "error sending to servers" << endl;
 			return -1;
 		}
 	}
@@ -109,14 +101,25 @@ int sendToServers(serverMessage message) {
 void* listenToClients(void* args) {
 	command commandToRecieve;
 	serverMessage message;
+	//detach thread
+	pthread_detach(pthread_self());
+	//set up clientPort which this thread owns, listens to, and sends out of
+	if ((clientPort = setUpUdpSock(CPORT)) < 0) {
+		cerr << "error setting up client port" << endl;
+		return NULL;
+	}
 	//Loop forever listening for incoming commands
 	while (recieveCommandFrom(CPORT, commandToRecieve)) {
+		cerr << "got a command" << endl;
 		//Create a server mesasge
 		message.time = time(NULL);
 		message.source = myID;
 		message.isPing = false;
+		if (message.isPing) {
+			cerr << "something is REALLY WRONG" << endl;
+		}
 		message.clientCommand = commandToRecieve;
-		sendToServers(message);
+		sendToServers(message, clientPort);
 	}
 	return NULL;
 }
@@ -125,13 +128,23 @@ void* pinger(void* ptr) {
 	serverMessage ping;
 	//detach thread
 	pthread_detach(pthread_self());
+	//set up a udpSock for this thread to send out of
+	int socket;
+	if ((socket = setUpUdpSock(3333)) < 0) {
+		cerr << "error setting up client port" << endl;
+		return NULL; 
+	}
+
 	ping.isPing = true;
+	if (!ping.isPing) {
+		cerr << "something ELSE is really wrong" << endl;
+	}
 	ping.source = myID;
 	while (true) {
 		//update the ping's time
 		ping.time = time(NULL);
 		//send the message to all the servers (helper function!)
-		if (sendToServers(ping) < 0) {
+		if (sendToServers(ping, socket) < 0) {
 			//there was an error, stop
 			return NULL;
 		}
@@ -144,6 +157,13 @@ void* queueManager(void* args) {
 	serverMessage message;
 	time_t oldTime;
 	pair<SID, time_t> currMin;
+	//detach thread
+	pthread_detach(pthread_self());
+	//set up serverport, which this thread owns to listen to
+	if ((serverPort = setUpUdpSock(SPORT)) < 0) {
+		cerr << "error setting up server port" << endl;
+		return NULL;
+	}
 	while (recvfrom(serverPort, (void*)&message, sizeof(message), 0, NULL, NULL)) {
 		//process the time
 		pthread_mutex_lock(&timeLock);
@@ -164,7 +184,7 @@ void* queueManager(void* args) {
 		}
 		pthread_mutex_unlock(&timeLock);
 
-		if(message.isPing == false) {
+		if (!message.isPing)  {
 			//put command in the queue
 			pthread_mutex_lock(&queueLock);
 			commandQueue.push(message);
@@ -196,15 +216,15 @@ command getNextCommand() {
 	return message.clientCommand;
 }
 
-void sendToClientIfNec(int* data, SID serverID) {
+void sendToClientIfNec(int* data, SID serverID, int socket) {
 	if (serverID != myID) {
 		return;
 	}
-	sendto(CPORT, data, sizeof(int), 0, (sockaddr *)&clientAddr, sizeof(clientAddr));
+	sendto(socket, data, sizeof(int), 0, (sockaddr *)&clientAddr, sizeof(clientAddr));
 }
 
 
-void processCommand(command& nextCommand, dataContainer& data) {
+void processCommand(command& nextCommand, dataContainer& data,int socket) {
 	// SendToClientIfNec relies on this value being set here
 	clientAddr.sin_addr.s_addr = nextCommand.clientId;
 
@@ -213,41 +233,41 @@ void processCommand(command& nextCommand, dataContainer& data) {
 	int min = INT_MIN;
 	if (nextCommand.type == create_int) {
 		if (data.ints.find(nextCommand.name) != data.ints.end()) {
-			sendToClientIfNec(&neg1, nextCommand.serverId);
+			sendToClientIfNec(&neg1, nextCommand.serverId, socket);
 		} else {
 			data.ints.insert(pair<int,int>(nextCommand.name, nextCommand.argument));
-			sendToClientIfNec(&zero, nextCommand.serverId);
+			sendToClientIfNec(&zero, nextCommand.serverId, socket);
 		}
 	}
 	if (nextCommand.type == get_int) {
 		if (data.ints.find(nextCommand.name) == data.ints.end()) {
-			sendToClientIfNec(&min, nextCommand.serverId);
+			sendToClientIfNec(&min, nextCommand.serverId, socket);
 		} else {
 			int returnVal = data.ints[nextCommand.name];
-			sendToClientIfNec(&returnVal, nextCommand.serverId);
+			sendToClientIfNec(&returnVal, nextCommand.serverId, socket);
 		}
 	}
 	if (nextCommand.type == set_int) {
 		if (data.ints.find(nextCommand.name) == data.ints.end()) {
-			sendToClientIfNec(&neg1, nextCommand.serverId);
+			sendToClientIfNec(&neg1, nextCommand.serverId, socket);
 		} else {
 			data.ints[nextCommand.name] = nextCommand.argument;
-			sendToClientIfNec(&zero, nextCommand.serverId);
+			sendToClientIfNec(&zero, nextCommand.serverId, socket);
 		}
 	}
 	if (nextCommand.type == create_barrier) {
 		if (data.barriers.find(nextCommand.name) == data.barriers.end()) {
 			Barrier newBar(nextCommand.clientId, nextCommand.serverId);
 			data.barriers[nextCommand.name] = newBar;
-			sendToClientIfNec(&zero, nextCommand.serverId);
+			sendToClientIfNec(&zero, nextCommand.serverId, socket);
 		} else {
 			data.barriers[nextCommand.name].addClient(nextCommand.clientId, nextCommand.serverId);
-			sendToClientIfNec(&zero, nextCommand.serverId);
+			sendToClientIfNec(&zero, nextCommand.serverId, socket);
 		}
 	}
 	if (nextCommand.type == wait_on_barrier) {
 		if (data.barriers.find(nextCommand.name) == data.barriers.end()) {
-			sendToClientIfNec(&neg1, nextCommand.serverId);
+			sendToClientIfNec(&neg1, nextCommand.serverId, socket);
 		}
 		Barrier bar = data.barriers[nextCommand.name];
 		bool needToNotify = bar.clientWait(nextCommand.clientId);
@@ -262,40 +282,48 @@ void processCommand(command& nextCommand, dataContainer& data) {
 	}
 	if (nextCommand.type == create_lock) {
 		if (data.locks.find(nextCommand.name) != data.locks.end()) {
-			sendToClientIfNec(&neg1, nextCommand.serverId);
+			sendToClientIfNec(&neg1, nextCommand.serverId, socket);
 		} else {
 			Lock newLock;
 			data.locks[nextCommand.name] = newLock;
-			sendToClientIfNec(&zero, nextCommand.serverId);
+			sendToClientIfNec(&zero, nextCommand.serverId, socket);
 		}
 	} 
 	if (nextCommand.type == get_lock) {
 		if (data.locks.find(nextCommand.name) == data.locks.end()) {
-			sendToClientIfNec(&neg1, nextCommand.serverId);
+			sendToClientIfNec(&neg1, nextCommand.serverId, socket);
 		} else {
 			Lock& lockToProcess = data.locks[nextCommand.name];
 			bool gotLock = lockToProcess.getLock(nextCommand.clientId, nextCommand.serverId);
 			if (gotLock) {
-				sendToClientIfNec(&zero, nextCommand.serverId);
+				sendToClientIfNec(&zero, nextCommand.serverId, socket);
 			}
 		}
 	}
 	if (nextCommand.type == release_lock) {
 		if (data.locks.find(nextCommand.name) == data.locks.end()) {
-			sendToClientIfNec(&neg1, nextCommand.serverId);
+			sendToClientIfNec(&neg1, nextCommand.serverId, socket);
 		} else {
 			Lock& lockToProcess = data.locks[nextCommand.name];
 			SID serverToGrantNext = lockToProcess.releaseLock(nextCommand.clientId);
-			sendToClientIfNec(&zero, serverToGrantNext);
+			sendToClientIfNec(&zero, serverToGrantNext, socket);
 		}
 	}
 }
 
 void* processCommandsThread(void* args) {
 	dataContainer data;
+	//detach thread
+	pthread_detach(pthread_self());
+	//set up port to send out of to clients
+	int socket;
+	if ((socket = setUpUdpSock(2222)) < 0) {
+		cerr << "error setting up server port" << endl;
+		return NULL;
+	}
 	for(;;) {
 		command commandToProcess = getNextCommand();
-		processCommand(commandToProcess, data);
+		processCommand(commandToProcess, data, socket);
 	}
 	return nullptr;
 }
