@@ -12,7 +12,7 @@ INCLUDES  =	-lpthread
 CXXFLAGS  =	-g -std=c++11 -Wall -Wextra -pedantic $(DEFINES) $(OPTFLAGS) $(INCLUDES) 
 CXX       =	g++
 
-TARGETS   =	server client
+TARGETS   =	server client protectedServer
 FILETRANSFER_OBJS = 
 
 # ----- Make Rules -----                                                        
@@ -25,6 +25,9 @@ server: server.o utilities.o barrier.o lock.o
 client: client.o client_library.o utilities.o
 	$(CXX) -o client client.o client_library.o utilities.o $(CXXFLAGS)
 
+protectedServer: protectedServer.o utilities.o
+	$(CXX) -o protectedServer protectedServer.o utilities.o $(CXXFLAGS)
+
 clean:
 	rm -f $(TARGETS) *.o
 
@@ -36,3 +39,4 @@ client_library.o: client_library.cpp
 utilities.o: utilities.cpp
 barrier.o: barrier.cpp
 lock.o: lock.cpp
+protectedServer.o: protectedServer.cpp
