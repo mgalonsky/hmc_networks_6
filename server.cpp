@@ -311,6 +311,10 @@ int main(int argc, char**argv) {
 	pthread_create( &tid, NULL, processCommandsThread, NULL);
 	pthread_create( &tid, NULL, queueManager, NULL);
 	pthread_create( &tid, NULL, listenToClients, NULL);
+
+	while (true) {
+		sleep(990);
+	}
 }
 
 

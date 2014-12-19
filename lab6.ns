@@ -4,7 +4,9 @@ source tb_compat.tcl
 
 #Set up nodes
 set server1 [$ns node]
+tb-set-node-os $server1 Ubuntu1004-STD
 set server2 [$ns node]
+tb-set-node-os $server2 Ubuntu1404-64-STD
 set server3 [$ns node]
 set clientA [$ns node]
 set clientB [$ns node]
